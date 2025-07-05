@@ -5,7 +5,7 @@
 int main(int argc, char *argv[]) {
 	// Check for correct number of arguments
 	if (argc != 2) {
-		printf("Usage: %s filename\n", argv[0]);
+		fprintf(stderr, "Usage: %s filename\n", argv[0]);
 		return 1;
 	}
 
@@ -17,22 +17,26 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Seek to the end of the file
-	fseek(file, 0, SEEK_END);
+	if (fseeko(file, 0, SEEK_END) != 0) {
+		perror("Error seeking to end of file.");
+		fclose(file);
+		return 1;
+	}
 
 	// Get the current byte offset (i.e., file size)
-	long size = ftell(file);
+	off_t size = ftello(file);
 
 	// Close the file as we no longer need it
 	fclose(file);
 
-	// Check if ftell failed
-	if (size == -1L) {
+	// Check if ftello failed
+	if (size == -1) {
 		perror("Error obtaining file size.");
 		return 1;
 	}
 
 	// Print the size in bytes
-	printf("File size: %ld bytes\n", size);
+	printf("File size: %jd bytes\n", (intmax_t)size);
 
 	return 0;
 }
@@ -52,5 +56,4 @@ Notes & Future Goals for This Project
 
 This tool is meant to be a lightweight CLI utility to quickly check file sizes.
 Might eventually expand to a file metadata inspector.
-
 */
